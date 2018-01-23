@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.me.obo.myapplication.R;
 import com.me.obo.myapplication.tool.ScreenUtil;
@@ -35,10 +36,42 @@ public class PullToRefreshLayout extends ViewGroup {
     private int mHeadLoadingViewHeight;
     private int mMovement = 0;
     private int mTargetViewType;
+    private PullToRefreshListener mPullToRefreshListener;
+    private boolean mIsRefreshing = false;
+
+    private ProgressBar mProgressBar;
 
     public PullToRefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        addView(mHeadLoadingView = LayoutInflater.from(context).inflate(R.layout.layout_head_loading, this, false));
+        addView(generalHeadLoadingView());
+    }
+
+    private View generalHeadLoadingView() {
+        mHeadLoadingView = LayoutInflater.from(getContext()).inflate(R.layout.layout_head_loading, this, false);
+        mProgressBar = mHeadLoadingView.findViewById(R.id.pb_progress);
+        mProgressBar.setMax(100);
+        mProgressBar.setIndeterminate(false);
+        mProgressBar.setProgress(0);
+        return mHeadLoadingView;
+    }
+
+    public void setPullToRefreshListener(PullToRefreshListener pullToRefreshListener) {
+        this.mPullToRefreshListener = pullToRefreshListener;
+    }
+
+    public void stopRefreshing() {
+        if (mIsRefreshing) {
+            final ValueAnimator valueAnimator = ValueAnimator.ofInt(mMovement, 0);
+            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mMovement = (int) animation.getAnimatedValue();
+                    requestLayout();
+                }
+            });
+            valueAnimator.start();
+            mIsRefreshing = false;
+        }
     }
 
     @Override
@@ -80,6 +113,9 @@ public class PullToRefreshLayout extends ViewGroup {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         Log.i(TAG, "onInterceptTouchEvent");
+        if (mIsRefreshing) {
+            return super.onInterceptTouchEvent(ev);
+        }
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mFirstDownY = ev.getY();
@@ -89,7 +125,7 @@ public class PullToRefreshLayout extends ViewGroup {
                 if (direction > 0) {
                     if (mTargetViewType == TYPE_TARGET_LIST) {
                         ListView listView = (ListView) mTargeView;
-                        if (listView.canScrollVertically(-1)) {
+                        if (!listView.canScrollVertically(-1)) {
                             mDragY = ev.getY();
                             return true;
                         }
@@ -124,6 +160,11 @@ public class PullToRefreshLayout extends ViewGroup {
         Log.i(TAG, "onTouchEvent");
         mMovement = (int) ((event.getY() - mDragY) * DAMPING_RATE);
         requestLayout();
+        int progress = mMovement * 100 / mHeadLoadingViewHeight;
+        if (progress > 100) {
+            progress = 100;
+        }
+        mProgressBar.setProgress(progress);
         if (event.getActionMasked() == MotionEvent.ACTION_UP) {
             triggerLoading();
         }
@@ -131,11 +172,18 @@ public class PullToRefreshLayout extends ViewGroup {
     }
 
     private void triggerLoading() {
+        int targetAnimationValue = 0;
         if (mMovement > mHeadLoadingViewHeight) {
-
+            if (mPullToRefreshListener != null) {
+                mPullToRefreshListener.onRefresh();
+            }
+            targetAnimationValue = mHeadLoadingViewHeight;
+            mIsRefreshing = true;
         }
 
-        final ValueAnimator valueAnimator = ValueAnimator.ofInt(mMovement, 0);
+
+
+        final ValueAnimator valueAnimator = ValueAnimator.ofInt(mMovement, targetAnimationValue);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {

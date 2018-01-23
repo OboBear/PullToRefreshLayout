@@ -5,7 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.me.obo.myapplication.databinding.ItemRecyclerBinding;
+import com.me.obo.myapplication.databinding.ItemLayoutBinding;
+import com.me.obo.myapplication.viewmodel.CustomViewModel;
 
 import java.util.List;
 
@@ -16,16 +17,16 @@ import java.util.List;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter {
 
-    private List<RecyclerViewModel> mRecyclerViewModels;
+    private List<CustomViewModel> mRecyclerViewModels;
     private LayoutInflater mLayoutInflater;
-    public RecyclerViewAdapter(Context context, List<RecyclerViewModel> mainViewModels) {
+    public RecyclerViewAdapter(Context context, List<CustomViewModel> mainViewModels) {
         mRecyclerViewModels = mainViewModels;
         mLayoutInflater = LayoutInflater.from(context);
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        ItemRecyclerBinding itemMainBinding = ItemRecyclerBinding.inflate(mLayoutInflater, parent, false);
+        ItemLayoutBinding itemMainBinding = ItemLayoutBinding.inflate(mLayoutInflater, parent, false);
         return new RecyclerViewHolder(itemMainBinding.getRoot(), itemMainBinding);
     }
 

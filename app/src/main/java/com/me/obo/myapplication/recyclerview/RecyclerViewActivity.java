@@ -2,15 +2,17 @@ package com.me.obo.myapplication.recyclerview;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
+import android.util.Log;
 
 import com.me.obo.myapplication.R;
 import com.me.obo.myapplication.databinding.ActivityRecyclerBinding;
+import com.me.obo.myapplication.pullrefresh.PullToRefreshListener;
+import com.me.obo.myapplication.viewmodel.CustomViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,22 +22,37 @@ import java.util.List;
  * @date 2018/1/23
  */
 
-public class RecyclerViewActivity extends AppCompatActivity {
+public class RecyclerViewActivity extends AppCompatActivity implements PullToRefreshListener {
+    private static final String TAG = "RecyclerViewActivity";
+    ActivityRecyclerBinding mActivityRecyclerBinding;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityRecyclerBinding activityRecyclerBinding = DataBindingUtil.setContentView(this, R.layout.activity_recycler);
-        activityRecyclerBinding.rvRecycler.setLayoutManager(new LinearLayoutManager(this));
-        activityRecyclerBinding.rvRecycler.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        activityRecyclerBinding.rvRecycler.setAdapter(new RecyclerViewAdapter(this, genernalViewModels()));
+        mActivityRecyclerBinding = DataBindingUtil.setContentView(this, R.layout.activity_recycler);
+        mActivityRecyclerBinding.rvRecycler.setLayoutManager(new LinearLayoutManager(this));
+        mActivityRecyclerBinding.rvRecycler.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        mActivityRecyclerBinding.rvRecycler.setAdapter(new RecyclerViewAdapter(this, genernalViewModels()));
+        mActivityRecyclerBinding.plRefreshLayout.setPullToRefreshListener(this);
     }
 
-    private List<RecyclerViewModel> genernalViewModels(){
-        List<RecyclerViewModel> recyclerViewModels = new ArrayList<>();
+    private List<CustomViewModel> genernalViewModels(){
+        List<CustomViewModel> recyclerViewModels = new ArrayList<>();
         for (int i = 0; i < 30; i ++) {
-            recyclerViewModels.add(new RecyclerViewModel(i + ""));
+            recyclerViewModels.add(new CustomViewModel(i + ""));
         }
 
         return recyclerViewModels;
+    }
+
+    @Override
+    public void onRefresh() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "stopRefreshing");
+                mActivityRecyclerBinding.plRefreshLayout.stopRefreshing();
+            }
+        }, 4000);
+
     }
 }

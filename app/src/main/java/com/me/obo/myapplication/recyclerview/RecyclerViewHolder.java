@@ -3,7 +3,8 @@ package com.me.obo.myapplication.recyclerview;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.me.obo.myapplication.databinding.ItemRecyclerBinding;
+import com.me.obo.myapplication.databinding.ItemLayoutBinding;
+import com.me.obo.myapplication.viewmodel.CustomViewModel;
 
 /**
  * @author obo
@@ -11,13 +12,13 @@ import com.me.obo.myapplication.databinding.ItemRecyclerBinding;
  */
 
 public class RecyclerViewHolder extends RecyclerView.ViewHolder {
-    ItemRecyclerBinding mItemRecyclerBinding;
-    public RecyclerViewHolder(View itemView, ItemRecyclerBinding itemRecyclerBinding) {
+    ItemLayoutBinding mItemLayoutBinding;
+    public RecyclerViewHolder(View itemView, ItemLayoutBinding itemLayoutBinding) {
         super(itemView);
-        this.mItemRecyclerBinding = itemRecyclerBinding;
+        this.mItemLayoutBinding = itemLayoutBinding;
     }
-    public void setViewModel(RecyclerViewModel recyclerViewModel) {
-        this.mItemRecyclerBinding.setRecyclerViewModel(recyclerViewModel);
+    public void setViewModel(CustomViewModel recyclerViewModel) {
+        this.mItemLayoutBinding.setRecyclerViewModel(recyclerViewModel);
     }
 
 }
